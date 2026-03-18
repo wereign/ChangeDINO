@@ -1,0 +1,6 @@
+**/__pycache__/
+checkpoints/
+dinov3/weights/
+outputs/
+input_data/
+weights/
