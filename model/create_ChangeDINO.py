@@ -73,7 +73,7 @@ class Model(nn.Module):
         save_path = os.path.join(self.save_dir, save_filename)
         if not os.path.isfile(save_path):
             print("%s not exists yet!" % save_path)
-            raise ("%s must exist!" % save_filename)
+            raise FileNotFoundError("%s must exist!" % save_filename)
         else:
             checkpoint = torch.load(
                 save_path, map_location=self.device, weights_only=True

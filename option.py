@@ -1,5 +1,6 @@
 import argparse
 import torch
+from pathlib import Path
 
 
 class Options:
@@ -51,6 +52,72 @@ class Options:
         self.parser.add_argument("--num_workers", type=int, default=4, help="#threads for loading data")
         self.parser.add_argument("--lr", type=float, default=5e-4)
         self.parser.add_argument("--weight_decay", type=float, default=5e-4)
+
+    @staticmethod
+    def get_defaults():
+        """Get default options as a dictionary for programmatic initialization."""
+        return {
+            "gpu_ids": [0],
+            "name": "WHU",
+            "dataroot": "/ssddd/chingheng/CD-Dataset",
+            "dataset": "WHU-CD",
+            "checkpoint_dir": "./checkpoints",
+            "save_test": False,
+            "result_dir": "./results",
+            "vis_path": "vis",
+            "load_pretrain": True,
+            "use_morph": False,
+            "phase": "train",
+            "backbone": "mobilenetv2",
+            "fpn": "fpn",
+            "fpn_channels": 128,
+            "deform_groups": 4,
+            "gamma_mode": "SE",
+            "beta_mode": "contextgatedconv",
+            "n_layers": [1, 1, 1, 1],
+            "extract_ids": [5, 11, 17, 23],
+            "alpha": 0.25,
+            "gamma": 4,
+            "batch_size": 16,
+            "num_epochs": 100,
+            "num_workers": 4,
+            "lr": 5e-4,
+            "weight_decay": 5e-4,
+        }
+
+    @staticmethod
+    def create_from_dict(params=None):
+        """
+        Create an options object programmatically without CLI parsing.
+        
+        Args:
+            params: Dictionary of parameter overrides. Uses defaults for any not specified.
+        
+        Returns:
+            Namespace object with all option attributes set.
+        """
+        defaults = Options.get_defaults()
+        if params:
+            defaults.update(params)
+        
+        # Create a namespace object with all the parameters
+        opt = argparse.Namespace(**defaults)
+        
+        # Resolve checkpoint_dir to absolute path relative to ChangeDINO directory
+        changdino_dir = Path(__file__).parent
+        if not Path(opt.checkpoint_dir).is_absolute():
+            opt.checkpoint_dir = str(changdino_dir / opt.checkpoint_dir)
+        
+        # Set GPU device if available
+        if torch.cuda.is_available() and len(opt.gpu_ids) > 0:
+            torch.cuda.set_device(opt.gpu_ids[0])
+        
+        opt.phase = "test"
+        opt.load_pretrain = True
+        opt.batch_size = 1
+        opt.num_workers = 0
+        
+        return opt
 
     def parse(self):
         self.init()

@@ -2,8 +2,9 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import re
+from pathlib import Path
 
-REPO_DIR = "dinov3"
+REPO_DIR = str(Path(__file__).parent.parent.parent / "dinov3")
 DINO_NAME = "dinov3_vitl16"
 MODEL_TO_NUM_LAYERS = {
     "VITS": 12,
@@ -18,12 +19,17 @@ MODEL_TO_NUM_LAYERS = {
 class DINOV3Wrapper(nn.Module):
     def __init__(
         self,
-        weights_path="dinov3/weights/dinov3_vitl16_pretrain_sat493m-eadcf0ff.pth",
+        weights_path=None,
         extract_ids=[5, 11, 17, 23],
         device="cuda",
     ):
         super().__init__()
         self.device = device
+        
+        # Default weights path relative to dinov3 directory
+        if weights_path is None:
+            weights_path = str(Path(REPO_DIR) / "weights" / "dinov3_vitl16_pretrain_sat493m-eadcf0ff.pth")
+        
         self.model = torch.hub.load(
             REPO_DIR,
             DINO_NAME,
